@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QA-Forge — Test Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F4F5F9;
+  --white:#FFFFFF;
+  --sidebar:#111318;
+  --sidebar-b:#1C1F28;
+  --sidebar-hover:#1E2130;
+  --sidebar-active:#252837;
+  --s-text:#E2E4EE;
+  --s-muted:#636880;
+  --s-border:#1E2130;
+  --border:#E2E4ED;
+  --border-2:#C8CADE;
+  --text:#0E1117;
+  --text-2:#52576E;
+  --text-3:#8B90A7;
+  --accent:#5E5CE6;
+  --accent-d:#4B49C8;
+  --accent-bg:#EEEEFF;
+  --green:#15803D;
+  --green-b:#16A34A;
+  --green-bg:#F0FDF4;
+  --green-border:#86EFAC;
+  --red:#DC2626;
+  --red-bg:#FEF2F2;
+  --red-border:#FCA5A5;
+  --amber:#B45309;
+  --amber-bg:#FFFBEB;
+  --amber-border:#FDE68A;
+  --blue:#1D4ED8;
+  --blue-bg:#EFF6FF;
+  --blue-border:#BAE6FD;
+  --r:8px;
+  --r-sm:5px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100%;display:flex;flex-direction:column;font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ─── TOPBAR ─── */
+.topbar{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:200}
+.tb-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.tb-logo-mark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:grid;place-items:center;flex-shrink:0}
+.tb-logo-mark svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tb-name{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.tb-sub{font-size:11.5px;font-weight:500;color:var(--text-3);letter-spacing:.02em;text-transform:uppercase}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-model{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-border);padding:3px 10px;border-radius:999px;display:none}
+.tb-key{display:flex;align-items:center;gap:7px;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:var(--white);font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .15s}
+.tb-key:hover{border-color:var(--border-2);background:var(--bg)}
+.tb-key.active{border-color:#86EFAC;background:var(--green-bg);color:var(--green)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--text-3);transition:background .3s;flex-shrink:0}
+.status-dot.on{background:var(--green-b)}
+
+/* ─── SHELL ─── */
+.shell{display:grid;grid-template-columns:268px 1fr;flex:1;overflow:hidden;min-height:0}
+
+/* ─── SIDEBAR ─── */
+.sidebar{background:var(--sidebar);border-right:1px solid var(--s-border);overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:4px}
+.s-section{margin-bottom:6px}
+.s-section-label{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--s-muted);padding:8px 8px 4px;display:block}
+.s-input{background:var(--sidebar-b);border:1px solid var(--s-border);border-radius:var(--r-sm);color:var(--s-text);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;padding:8px 10px;width:100%;outline:none;transition:border-color .15s}
+.s-input:focus{border-color:var(--accent)}
+.s-input::placeholder{color:var(--s-muted)}
+.s-textarea{min-height:90px;resize:vertical;line-height:1.55}
+select.s-input{cursor:pointer}
+.s-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.s-field{display:flex;flex-direction:column;gap:4px}
+.s-label{font-size:11px;font-weight:600;color:var(--s-muted);font-family:'Outfit',sans-serif;letter-spacing:.02em}
+
+/* drop zone compact */
+.s-drop{border:1.5px dashed #2A2D3E;border-radius:var(--r-sm);padding:14px;text-align:center;cursor:pointer;transition:all .2s;background:var(--sidebar-b);position:relative;margin-top:4px}
+.s-drop:hover,.s-drop.drag{border-color:var(--accent);background:rgba(94,92,230,.06)}
+.s-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.s-drop-icon{font-size:18px;display:block;margin-bottom:4px;opacity:.6}
+.s-drop-t{font-size:11px;font-weight:600;color:var(--s-muted)}
+.s-drop-s{font-size:10px;color:#3A3D54;margin-top:2px}
+.s-files{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.s-file{background:var(--sidebar-b);border:1px solid var(--s-border);border-radius:5px;padding:5px 8px;display:flex;align-items:center;gap:6px}
+.s-file-badge{font-size:9px;font-weight:700;font-family:'Outfit',monospace;padding:1px 5px;border-radius:3px;letter-spacing:.04em;flex-shrink:0}
+.fb-pdf{background:#3D1C1C;color:#FCA5A5}
+.fb-img{background:#3D3010;color:#FDE68A}
+.fb-json{background:#0F2D1E;color:#86EFAC}
+.fb-csv{background:#0F1E35;color:#BAE6FD}
+.fb-txt,.fb-md{background:#261B3D;color:#C4B5FD}
+.s-file-name{font-size:11px;font-weight:500;color:#8B90A7;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-file-rm{background:none;border:none;color:#3A3D54;cursor:pointer;font-size:12px;padding:0;line-height:1;transition:color .15s}
+.s-file-rm:hover{color:#FCA5A5}
+
+/* type toggles */
+.type-list{display:flex;flex-direction:column;gap:3px;margin-top:2px}
+.type-toggle{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none}
+.type-toggle:hover{background:var(--sidebar-hover)}
+.type-toggle.on{background:var(--sidebar-active);border-color:#2A2D3E}
+.type-cb{width:14px;height:14px;border-radius:3px;border:1.5px solid #2E3148;background:var(--sidebar-b);flex-shrink:0;display:grid;place-items:center;transition:all .15s}
+.type-toggle.on .type-cb{background:var(--accent);border-color:var(--accent)}
+.type-cb-tick{width:7px;height:5px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px);display:none}
+.type-toggle.on .type-cb-tick{display:block}
+.type-label{font-size:12px;font-weight:600;color:var(--s-text);flex:1}
+.type-toggle:not(.on) .type-label{color:var(--s-muted)}
+.type-tag{font-size:9px;font-weight:700;font-family:'Outfit',sans-serif;letter-spacing:.06em;padding:1px 6px;border-radius:3px;text-transform:uppercase}
+.tt-pos{background:#0F2D1E;color:#86EFAC}
+.tt-neg{background:#3D1C1C;color:#FCA5A5}
+.tt-edge{background:#0F1E35;color:#93C5FD}
+.tt-sec{background:#3D2006;color:#FCD34D}
+.tt-hal{background:#261B3D;color:#C4B5FD}
+.tt-per{background:#162033;color:#67E8F9}
+
+/* sidebar divider */
+.s-divider{height:1px;background:var(--s-border);margin:8px 0}
+
+/* sidebar btn */
+.s-btn{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.01em;margin-top:4px}
+.s-btn:hover{background:var(--accent-d)}
+.s-btn:disabled{opacity:.4;cursor:not-allowed}
+.s-btn-outline{width:100%;padding:9px;background:transparent;color:var(--s-muted);border:1px solid var(--s-border);border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:4px}
+.s-btn-outline:hover{background:var(--sidebar-hover);color:var(--s-text)}
+
+/* ─── MAIN AREA ─── */
+.main{overflow-y:auto;padding:24px}
+.page-header{margin-bottom:20px}
+.page-title{font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.3px;margin-bottom:3px}
+.page-sub{font-size:13px;color:var(--text-2)}
+
+/* ─── ALERTS ─── */
+.alert{border-radius:var(--r-sm);padding:10px 13px;font-size:12.5px;font-weight:500;display:flex;align-items:flex-start;gap:8px;line-height:1.5;margin-top:8px}
+.al-ok{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.al-err{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.al-info{background:var(--accent-bg);border:1px solid #C7C5F8;color:var(--accent)}
+.al-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.al-raw{background:#FFF8E7;border:1px solid #FDE68A;border-radius:4px;padding:6px 8px;font-size:10.5px;font-family:'JetBrains Mono',monospace;color:var(--amber);margin-top:6px;max-height:60px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(94,92,230,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.st-row{font-size:12px;color:var(--text-2);font-weight:500;padding:6px 0;display:flex;align-items:center}
+
+/* ─── EMPTY STATE ─── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;text-align:center;border:1.5px dashed var(--border);border-radius:12px;background:var(--white)}
+.empty-icon{width:48px;height:48px;border-radius:12px;background:var(--accent-bg);border:1px solid #C7C5F8;display:grid;place-items:center;margin-bottom:16px}
+.empty-icon svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.empty-title{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--text-2);max-width:320px;line-height:1.6}
+
+/* ─── SCORE BAR ─── */
+.scorebar{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:0;box-shadow:var(--shadow-sm)}
+.score-item{display:flex;flex-direction:column;align-items:center;padding:0 8px;border-right:1px solid var(--border)}
+.score-item:last-child{border-right:none}
+.score-val{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.5px}
+.score-lbl{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-top:1px}
+.sv-total{color:var(--text)}
+.sv-pass{color:var(--green-b)}
+.sv-fail{color:var(--red)}
+.sv-pend{color:var(--text-3)}
+.sv-score{color:var(--accent)}
+
+/* progress */
+.prog-wrap{height:3px;background:#EAEAEF;border-radius:999px;margin:0 0 16px;overflow:hidden}
+.prog-fill{height:3px;background:linear-gradient(90deg,var(--accent),var(--green-b));border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1);width:0%}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 16px;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.01em}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:var(--white);color:var(--text-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 16px;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{border-color:var(--border-2);color:var(--text)}
+.count-badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--text-3);background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:4px}
+
+/* ─── TEST CARD ─── */
+.tc-list{display:flex;flex-direction:column;gap:8px}
+.tc{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
+.tc:hover{box-shadow:var(--shadow)}
+.tc-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--white)}
+.tc-type{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:4px;flex-shrink:0}
+.tp-pos{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.tp-neg{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.tp-edge{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.tp-sec{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.tp-hal{background:var(--accent-bg);color:var(--accent);border:1px solid #C7C5F8}
+.tp-per{background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD}
+.tc-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);font-weight:500;flex-shrink:0}
+.tc-title-text{font-size:13px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-status-chip{font-family:'Outfit',sans-serif;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.04em;flex-shrink:0}
+.chip-pend{background:#F1F3F9;color:var(--text-3);border:1px solid var(--border)}
+.chip-pass{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.chip-fail{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.chip-skip{background:#F1F3F9;color:var(--text-3);border:1px dashed var(--border)}
+
+.tc-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.field-block{}
+.field-label{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.fl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.fl-dot.d-prompt{background:var(--accent)}
+.fl-dot.d-exp{background:var(--green-b)}
+.fl-dot.d-actual{background:var(--amber)}
+.code-box{background:#FAFAFE;border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.65;color:var(--text);white-space:pre-wrap;word-break:break-word;max-height:110px;overflow-y:auto}
+.code-box.exp-box{background:#F0FDF4;border-color:var(--green-border);color:#14532D}
+.code-box.pass-b{border-color:var(--green-border)}
+.code-box.fail-b{border-color:var(--red-border)}
+.copy-link{font-size:11px;font-weight:600;color:var(--accent);cursor:pointer;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;margin-top:4px;transition:color .15s;display:inline-flex;align-items:center;gap:3px}
+.copy-link:hover{color:var(--accent-d);text-decoration:underline}
+.cp-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.cp-tag{font-size:11.5px;font-weight:500;color:var(--text-2);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:3px 9px;display:inline-flex;align-items:center;gap:4px}
+.cp-arrow{color:var(--accent);font-size:10px;font-weight:700}
+.actual-input{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;width:100%;outline:none;resize:vertical;min-height:72px;line-height:1.65;transition:border-color .15s}
+.actual-input:focus{border-color:var(--accent);background:var(--white)}
+.actual-input::placeholder{color:var(--text-3);font-family:'DM Sans',sans-serif;font-size:12px}
+.tc-actions{display:flex;gap:8px;align-items:center;padding-top:4px}
+.btn-compare{background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 14px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-compare:hover{background:var(--accent-d)}
+.btn-compare:disabled{opacity:.4;cursor:not-allowed}
+.btn-skip{background:transparent;color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-skip:hover{border-color:var(--border-2);color:var(--text-2)}
+
+/* result box */
+.result-box{border-radius:var(--r-sm);padding:10px 13px;font-size:12.5px;font-weight:500;line-height:1.55}
+.rb-pass{background:var(--green-bg);border:1px solid var(--green-border);color:#14532D}
+.rb-fail{background:var(--red-bg);border:1px solid var(--red-border);color:#7F1D1D}
+.rb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.rb-verdict{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px}
+.rb-score{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.75}
+.rb-reason{font-size:12.5px;line-height:1.5;margin-bottom:4px}
+.rb-matches{font-size:11.5px;font-weight:600;margin-top:4px}
+.rb-match-ok{color:var(--green-b)}
+.rb-match-fail{color:var(--red)}
+.rb-fix{background:#FEFCE8;border:1px solid #FDE68A;border-radius:4px;padding:5px 9px;font-size:11.5px;color:var(--amber);margin-top:6px;font-weight:500}
+
+/* info ribbon */
+.info-ribbon{background:var(--accent-bg);border:1px solid #C7C5F8;border-radius:var(--r-sm);padding:10px 14px;font-size:12.5px;font-weight:500;color:#3730A3;line-height:1.6;margin-bottom:16px}
+
+@media(max-width:768px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .scorebar{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-logo">
+    <div class="tb-logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    </div>
+    <span class="tb-name">QA-Forge</span>
+  </div>
+  <div class="tb-sep"></div>
+  <span class="tb-sub">Test Intelligence Platform</span>
+  <div class="tb-right">
+    <span class="tb-model" id="mTag"></span>
+    <div class="tb-key" id="kPill" onclick="document.getElementById('kIn').focus()">
+      <div class="status-dot" id="kDot"></div>
+      <span id="kLbl">Configure API Key</span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar">
+
+  <!-- API KEY -->
+  <div class="s-section">
+    <span class="s-section-label">API Key</span>
+    <div style="display:flex;gap:6px">
+      <input type="password" class="s-input" id="kIn" placeholder="AIzaSy..." style="flex:1;min-width:0">
+      <button class="s-btn" id="kBtn" onclick="testKey()" style="width:auto;padding:8px 12px;margin:0;font-size:12px">Verify</button>
+    </div>
+    <div id="kMsg"></div>
+  </div>
+
+  <div class="s-divider"></div>
+
+  <!-- DESCRIBE -->
+  <div class="s-section">
+    <span class="s-section-label">Chatbot Description</span>
+    <textarea class="s-input s-textarea" id="botDesc" placeholder="Describe what your chatbot does, its input format, and expected output format. Example: Takes patient lab reports, returns JSON with diagnosis, risk_level, recommended_tests, confidence_score."></textarea>
+  </div>
+
+  <!-- FILES -->
+  <div class="s-section">
+    <span class="s-section-label">Reference Files</span>
+    <div class="s-drop" id="dz">
+      <input type="file" id="fInput" multiple accept=".pdf,.png,.jpg,.jpeg,.txt,.json,.csv,.md" onchange="handleFiles(this.files)">
+      <span class="s-drop-icon">&#128196;</span>
+      <div class="s-drop-t">Drop files or click to upload</div>
+      <div class="s-drop-s">PDF · Images · JSON · CSV · Text</div>
+    </div>
+    <div class="s-files" id="fList"></div>
+  </div>
+
+  <div class="s-divider"></div>
+
+  <!-- CONFIG -->
+  <div class="s-section">
+    <span class="s-section-label">Configuration</span>
+    <div class="s-row">
+      <div class="s-field">
+        <span class="s-label">Test Count</span>
+        <select class="s-input" id="tcCount">
+          <option value="5">5 cases</option>
+          <option value="10" selected>10 cases</option>
+          <option value="15">15 cases</option>
+          <option value="20">20 cases</option>
+          <option value="30">30 cases</option>
+        </select>
+      </div>
+      <div class="s-field">
+        <span class="s-label">Output Format</span>
+        <select class="s-input" id="outFmt">
+          <option value="JSON">JSON</option>
+          <option value="plain text">Plain Text</option>
+          <option value="mixed text and JSON">Mixed</option>
+          <option value="structured fields">Structured</option>
+          <option value="Markdown">Markdown</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEST TYPES -->
+  <div class="s-section">
+    <span class="s-section-label">Test Types</span>
+    <div class="type-list">
+      <div class="type-toggle on" id="tt-positive" onclick="toggleType('positive',this)">
+        <div class="type-cb"><div class="type-cb-tick"></div></div>
+        <span class="type-label">Positive</span>
+        <span class="type-tag tt-pos">Pass</span>
+      </div>
+      <div class="type-toggle on" id="tt-negative" onclick="toggleType('negative',this)">
+        <div class="type-cb"><div class="type-cb-tick"></div></div>
+        <span class="type-label">Negative</span>
+        <span class="type-tag tt-neg">Fail</span>
+      </div>
+      <div class="type-toggle on" id="tt-edge" onclick="toggleType('edge',this)">
+        <div class="type-cb"><div class="type-cb-tick"></div></div>
+        <span class="type-label">Edge Cases</span>
+        <span class="type-tag tt-edge">Edge</span>
+      </div>
+      <div class="type-toggle" id="tt-security" onclick="toggleType('security',this)">
+        <div class="type-cb"><div class="type-cb-tick"></div></div>
+        <span class="type-label">Security</span>
+        <span class="type-tag tt-sec">Sec</span>
+      </div>
+      <div class="type-toggle" id="tt-hallucination" onclick="toggleType('hallucination',this)">
+        <div class="type-cb"><div class="type-cb-tick"></div></div>
+        <span class="type-label">Hallucination</span>
+        <span class="type-tag tt-hal">AI</span>
+      </div>
+      <div class="type-toggle" id="tt-performance" onclick="toggleType('performance',this)">
+        <div class="type-cb"><div class="type-cb-tick"></div></div>
+        <span class="type-label">Performance</span>
+        <span class="type-tag tt-per">Perf</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-divider"></div>
+
+  <button class="s-btn" id="genBtn" onclick="generateTests()">Generate Test Suite</button>
+  <button class="s-btn-outline" onclick="resetAll()">Reset All</button>
+
+  <div id="genMsg"></div>
+
+</aside>
+
+<!-- ─── MAIN ─── -->
+<main class="main">
+
+  <!-- empty state -->
+  <div id="emptyState">
+    <div class="page-header">
+      <div class="page-title">Test Suite</div>
+      <div class="page-sub">Configure your chatbot in the sidebar, then generate a test suite.</div>
+    </div>
+    <div class="empty">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      </div>
+      <div class="empty-title">No tests generated yet</div>
+      <div class="empty-sub">Fill in the API key and chatbot description in the sidebar, select your test types, and click Generate Test Suite.</div>
+    </div>
+  </div>
+
+  <!-- runner -->
+  <div id="runnerView" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title">Test Suite</div>
+        <div class="page-sub" id="suiteDesc"></div>
+      </div>
+    </div>
+
+    <!-- scores -->
+    <div class="scorebar">
+      <div class="score-item">
+        <div class="score-val sv-total" id="sT">0</div>
+        <div class="score-lbl">Total</div>
+      </div>
+      <div class="score-item">
+        <div class="score-val sv-pass" id="sP">0</div>
+        <div class="score-lbl">Passed</div>
+      </div>
+      <div class="score-item">
+        <div class="score-val sv-fail" id="sF">0</div>
+        <div class="score-lbl">Failed</div>
+      </div>
+      <div class="score-item">
+        <div class="score-val sv-pend" id="sPe">0</div>
+        <div class="score-lbl">Pending</div>
+      </div>
+      <div class="score-item" style="border-right:none">
+        <div class="score-val sv-score" id="sSc">—</div>
+        <div class="score-lbl">Pass Rate</div>
+      </div>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog"></div></div>
+
+    <!-- how to -->
+    <div class="info-ribbon">
+      <strong>How to run a test:</strong> Copy the prompt below &rarr; send it to your chatbot &rarr; copy the response &rarr; paste in &ldquo;Actual Output&rdquo; &rarr; click Compare to get a verdict.
+    </div>
+
+    <!-- toolbar -->
+    <div class="toolbar">
+      <button class="btn-primary" onclick="dlReport()">Export Report</button>
+      <button class="btn-secondary" onclick="resetAll()">Clear Suite</button>
+      <span class="count-badge" id="countBadge"></span>
+    </div>
+
+    <div class="tc-list" id="tcList"></div>
+  </div>
+
+</main>
+</div>
+
+<script>
+var apiKey='', modelName='', testCases=[], results={}, uploadedFiles=[];
+var selTypes={positive:true,negative:true,edge:true,security:false,hallucination:false,performance:false};
+
+// drag/drop
+var dzEl=document.getElementById('dz');
+dzEl.addEventListener('dragover',function(e){e.preventDefault();dzEl.classList.add('drag');});
+dzEl.addEventListener('dragleave',function(){dzEl.classList.remove('drag');});
+dzEl.addEventListener('drop',function(e){e.preventDefault();dzEl.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+
+function toggleType(id,el){
+  selTypes[id]=!selTypes[id];
+  el.classList.toggle('on',selTypes[id]);
+}
+
+// ====== KEY ======
+async function testKey(){
+  var k=document.getElementById('kIn').value.trim();
+  var msg=document.getElementById('kMsg');
+  if(!k){msg.innerHTML='<div class="alert al-err"><span class="al-icon">&#9888;</span>Enter your Gemini API key.</div>';return;}
+  var btn=document.getElementById('kBtn');
+  btn.disabled=true;btn.textContent='...';
+  msg.innerHTML='<div class="st-row"><span class="spin"></span>Detecting model...</div>';
+  try{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+k);
+    var data=await res.json();
+    if(!res.ok) throw new Error(data.error&&data.error.message?data.error.message:'HTTP '+res.status);
+    var names=(data.models||[]).map(function(m){return m.name;});
+    var priority=['models/gemini-2.5-flash','models/gemini-2.5-pro','models/gemini-2.0-flash','models/gemini-2.0-flash-001','models/gemini-2.0-flash-lite','models/gemini-1.5-flash-latest','models/gemini-1.5-flash'];
+    var found='';
+    for(var i=0;i<priority.length;i++){if(names.indexOf(priority[i])>-1){found=priority[i];break;}}
+    if(!found){for(var j=0;j<names.length;j++){if(names[j].indexOf('gemini')>-1){found=names[j];break;}}}
+    if(!found) throw new Error('No compatible model found. Verify key at aistudio.google.com');
+    apiKey=k;modelName=found;
+    var short=found.replace('models/','');
+    document.getElementById('mTag').style.display='inline';document.getElementById('mTag').textContent=short;
+    document.getElementById('kDot').classList.add('on');
+    document.getElementById('kLbl').textContent='Authenticated';
+    document.getElementById('kPill').classList.add('active');
+    msg.innerHTML='<div class="alert al-ok"><span class="al-icon">&#10003;</span>Connected &mdash; <strong>'+short+'</strong></div>';
+  }catch(e){
+    apiKey='';modelName='';
+    msg.innerHTML='<div class="alert al-err"><span class="al-icon">&#9888;</span>'+e.message+'</div>';
+  }finally{btn.disabled=false;btn.textContent='Verify';}
+}
+
+// ====== FILES ======
+var FBADGE={pdf:'fb-pdf',png:'fb-img',jpg:'fb-img',jpeg:'fb-img',json:'fb-json',csv:'fb-csv',txt:'fb-txt',md:'fb-md'};
+function handleFiles(files){
+  for(var i=0;i<files.length;i++){(function(file){
+    var ext=file.name.split('.').pop().toLowerCase();
+    var isText=['txt','json','csv','md'].indexOf(ext)>-1;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var entry={name:file.name,size:file.size,ext:ext,isText:isText,mimeType:file.type||'application/octet-stream'};
+      if(isText) entry.textContent=e.target.result.substring(0,8000);
+      else{entry.base64=e.target.result.split(',')[1];entry.mimeType=file.type;}
+      uploadedFiles.push(entry);renderFiles();
+    };
+    if(isText) reader.readAsText(file); else reader.readAsDataURL(file);
+  })(files[i]);}
+}
+function renderFiles(){
+  var list=document.getElementById('fList');list.innerHTML='';
+  uploadedFiles.forEach(function(f,i){
+    var div=document.createElement('div');div.className='s-file';
+    var sz=f.size<1024?f.size+'B':f.size<1048576?Math.round(f.size/1024)+'KB':Math.round(f.size/1048576)+'MB';
+    var bc=FBADGE[f.ext]||'fb-txt';
+    div.innerHTML='<span class="s-file-badge '+bc+'">'+f.ext.toUpperCase()+'</span>'
+      +'<span class="s-file-name">'+esc(f.name)+'</span>'
+      +'<span style="font-size:10px;color:var(--s-muted)">'+sz+'</span>'
+      +'<button class="s-file-rm" onclick="removeFile('+i+')">&#215;</button>';
+    list.appendChild(div);
+  });
+}
+function removeFile(i){uploadedFiles.splice(i,1);renderFiles();}
+
+// ====== API ======
+async function callGemini(prompt,files,forceJson){
+  if(!apiKey||!modelName) throw new Error('No API key configured.');
+  var parts=[];
+  if(files&&files.length){
+    files.forEach(function(f){
+      if(f.isText) parts.push({text:'[File: '+f.name+']\n'+f.textContent});
+      else if(f.base64){parts.push({inline_data:{mime_type:f.mimeType,data:f.base64}});parts.push({text:'(File: '+f.name+')'});}
+    });
+  }
+  parts.push({text:prompt});
+  var gc={temperature:0.1,maxOutputTokens:8192};
+  if(forceJson&&!(files&&files.some(function(f){return !f.isText;}))) gc.response_mime_type='application/json';
+  var res=await fetch('https://generativelanguage.googleapis.com/v1beta/'+modelName+':generateContent?key='+apiKey,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:parts}],generationConfig:gc})
+  });
+  var data=await res.json();
+  if(!res.ok) throw new Error(data.error&&data.error.message?data.error.message:'API error '+res.status);
+  return data.candidates[0].content.parts[0].text;
+}
+
+function parseJSON(raw){
+  var s=raw.trim();
+  try{return JSON.parse(s);}catch(e){}
+  var stripped=s.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  try{return JSON.parse(stripped);}catch(e){}
+  var ai=s.indexOf('['),aj=s.lastIndexOf(']');
+  if(ai>-1&&aj>ai){try{var r=JSON.parse(s.substring(ai,aj+1));if(Array.isArray(r))return r;}catch(e){}}
+  var bi=stripped.indexOf('['),bj=stripped.lastIndexOf(']');
+  if(bi>-1&&bj>bi){try{var r=JSON.parse(stripped.substring(bi,bj+1));if(Array.isArray(r))return r;}catch(e){}}
+  var oi=s.indexOf('{'),oj=s.lastIndexOf('}');
+  if(oi>-1&&oj>oi){try{return JSON.parse(s.substring(oi,oj+1));}catch(e){}}
+  var fixed=stripped.replace(/,\s*([}\]])/g,'$1');
+  try{return JSON.parse(fixed);}catch(e){}
+  throw new Error('PARSE_FAIL::'+raw.substring(0,300));
+}
+
+// ====== GENERATE ======
+async function generateTests(){
+  if(!apiKey){document.getElementById('genMsg').innerHTML='<div class="alert al-err"><span class="al-icon">&#9888;</span>Configure and verify your API key first.</div>';return;}
+  var desc=document.getElementById('botDesc').value.trim();
+  if(!desc){document.getElementById('genMsg').innerHTML='<div class="alert al-err"><span class="al-icon">&#9888;</span>Enter a chatbot description.</div>';return;}
+  var types=Object.keys(selTypes).filter(function(t){return selTypes[t];});
+  if(!types.length){document.getElementById('genMsg').innerHTML='<div class="alert al-err"><span class="al-icon">&#9888;</span>Select at least one test type.</div>';return;}
+  var count=document.getElementById('tcCount').value;
+  var fmt=document.getElementById('outFmt').value;
+  var btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.textContent='Generating...';
+  var tg={
+    positive:'Valid complete inputs. Expected output = the correct response.',
+    negative:'Invalid inputs: missing fields, wrong types, empty values. Expected = graceful error handling.',
+    edge:'Boundary conditions: very long text, special chars, null/zero values, multilingual input.',
+    security:'Prompt injection, jailbreak attempts, system prompt extraction.',
+    hallucination:'Inputs that could make the bot fabricate facts not present in the input.',
+    performance:'Very large inputs, repeated identical data, overload scenarios.'
+  };
+  var prompt='Output only a JSON array. No markdown. No explanation. Start with [ end with ].\n\n'
+    +'Generate '+count+' QA test cases for this chatbot.\n\n'
+    +'Chatbot: '+desc+'\n'
+    +(uploadedFiles.length?'['+uploadedFiles.length+' reference file(s) attached]\n':'')
+    +'Output format: '+fmt+'\n'
+    +'Test types: '+types.join(', ')+'\n\n'
+    +'Type rules:\n'+types.map(function(t){return t+': '+tg[t];}).join('\n')+'\n\n'
+    +'Required fields per test case:\n'
+    +'id (TC-001 format), title, type, prompt (exact input to send), '
+    +'expected_output (what correct response must contain), '
+    +'check_points (array of exactly 2 strings to verify), reason\n\n'
+    +'Output ONLY the raw JSON array starting with [';
+
+  var setMsg=function(h){document.getElementById('genMsg').innerHTML=h;};
+  setMsg('<div class="st-row"><span class="spin"></span>Generating '+count+' test cases'+(uploadedFiles.length?' with '+uploadedFiles.length+' file(s)':'')+'...</div>');
+
+  var list=null,lastErr='';
+  async function tryGen(f,j){var raw=await callGemini(prompt,f,j);var p=parseJSON(raw);if(!Array.isArray(p)||!p.length)throw new Error('Empty response');return p;}
+
+  try{list=await tryGen(uploadedFiles,true);}catch(e1){
+    lastErr=e1.message;
+    var textOnly=uploadedFiles.filter(function(f){return f.isText;});
+    if(uploadedFiles.length>0){
+      setMsg('<div class="st-row"><span class="spin"></span>Retrying with text context only...</div>');
+      try{list=await tryGen(textOnly,true);}catch(e2){lastErr=e2.message;}
+    }
+    if(!list){
+      setMsg('<div class="st-row"><span class="spin"></span>Retrying without file context...</div>');
+      try{list=await tryGen([],false);}catch(e3){lastErr=e3.message;}
+    }
+  }
+
+  if(list&&list.length){
+    testCases=list;results={};
+    document.getElementById('suiteDesc').textContent=list.length+' test cases generated &mdash; '+types.join(', ');
+    document.getElementById('countBadge').textContent=list.length+' tests';
+    renderRunner(list);
+    document.getElementById('emptyState').style.display='none';
+    document.getElementById('runnerView').style.display='block';
+    setMsg('<div class="alert al-ok"><span class="al-icon">&#10003;</span>'+list.length+' test cases ready.</div>');
+    document.getElementById('runnerView').scrollIntoView({behavior:'smooth'});
+  } else {
+    var raw=lastErr.startsWith('PARSE_FAIL::')?'<div class="al-raw">'+esc(lastErr.replace('PARSE_FAIL::',''))+'</div>':'';
+    setMsg('<div class="alert al-err"><span class="al-icon">&#9888;</span>Generation failed. Try reducing the test count to 5, simplifying the description, or removing uploaded files.<br>Error: '+esc(lastErr.replace('PARSE_FAIL::','').substring(0,120))+raw+'</div>');
+  }
+  btn.disabled=false;btn.textContent='Generate Test Suite';
+}
+
+// ====== RENDER ======
+var TTYPE={positive:'tp-pos',negative:'tp-neg',edge:'tp-edge',security:'tp-sec',hallucination:'tp-hal',performance:'tp-per'};
+var TLBL={positive:'Positive',negative:'Negative',edge:'Edge Case',security:'Security',hallucination:'Hallucination',performance:'Performance'};
+
+function renderRunner(list){
+  var c=document.getElementById('tcList');c.innerHTML='';updateScores();
+  list.forEach(function(tc,idx){
+    var div=document.createElement('div');div.className='tc';div.id='tc-'+tc.id;
+    var bc=TTYPE[tc.type]||'tp-pos';
+    var tl=TLBL[tc.type]||tc.type;
+    var cps='';
+    if(tc.check_points&&tc.check_points.length){
+      cps='<div class="field-block"><div class="field-label"><span class="fl-dot" style="background:var(--accent)"></span>Verification Points</div>'
+        +'<div class="cp-list">'
+        +tc.check_points.map(function(cp){return '<span class="cp-tag"><span class="cp-arrow">&#8594;</span>'+esc(cp)+'</span>';}).join('')
+        +'</div></div>';
+    }
+    div.innerHTML=
+      '<div class="tc-head">'
+        +'<span class="tc-type '+bc+'">'+tl+'</span>'
+        +'<span class="tc-id">'+esc(tc.id)+'</span>'
+        +'<span class="tc-title-text">'+esc(tc.title)+'</span>'
+        +'<span class="tc-status-chip chip-pend" id="st-'+esc(tc.id)+'">Pending</span>'
+      +'</div>'
+      +'<div class="tc-body">'
+        +'<div class="field-block">'
+          +'<div class="field-label"><span class="fl-dot d-prompt"></span>Prompt &mdash; copy and send to your chatbot</div>'
+          +'<div class="code-box" id="pr-'+esc(tc.id)+'">'+esc(tc.prompt)+'</div>'
+          +'<button class="copy-link" id="cpb-'+esc(tc.id)+'">&#10697; Copy prompt</button>'
+        +'</div>'
+        +'<div class="field-block">'
+          +'<div class="field-label"><span class="fl-dot d-exp"></span>Expected Output</div>'
+          +'<div class="code-box exp-box">'+esc(tc.expected_output)+'</div>'
+        +'</div>'
+        +cps
+        +'<div class="field-block">'
+          +'<div class="field-label"><span class="fl-dot d-actual"></span>Actual Output &mdash; paste your chatbot response here</div>'
+          +'<textarea class="actual-input" id="ac-'+esc(tc.id)+'" placeholder="Send the prompt to your chatbot, copy the response, paste it here..."></textarea>'
+        +'</div>'
+        +'<div id="cr-'+esc(tc.id)+'"></div>'
+        +'<div class="tc-actions">'
+          +'<button class="btn-compare" id="rb-'+esc(tc.id)+'">Compare</button>'
+          +'<button class="btn-skip" id="sk-'+esc(tc.id)+'">Skip</button>'
+        +'</div>'
+      +'</div>';
+    c.appendChild(div);
+    (function(id){
+      document.getElementById('cpb-'+id).addEventListener('click',function(){
+        var el=document.getElementById('pr-'+id);
+        var txt=el?el.innerText:'';
+        if(navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){
+          var b=document.getElementById('cpb-'+id);
+          if(b){b.textContent='Copied';setTimeout(function(){b.innerHTML='&#10697; Copy prompt';},1800);}
+        });
+      });
+      document.getElementById('rb-'+id).addEventListener('click',function(){compareOne(id);});
+      document.getElementById('sk-'+id).addEventListener('click',function(){skipOne(id);});
+    })(tc.id);
+  });
+}
+
+// ====== COMPARE ======
+async function compareOne(tcId){
+  var tc=testCases.find(function(t){return t.id===tcId;});if(!tc) return;
+  var actual=document.getElementById('ac-'+tcId).value.trim();
+  if(!actual){
+    document.getElementById('cr-'+tcId).innerHTML='<div class="alert al-err" style="margin-top:8px"><span class="al-icon">&#9888;</span>Paste the chatbot response before comparing.</div>';
+    return;
+  }
+  var btn=document.getElementById('rb-'+tcId);
+  btn.disabled=true;btn.textContent='Analyzing...';
+  document.getElementById('cr-'+tcId).innerHTML='<div class="st-row" style="margin-top:8px"><span class="spin"></span>Comparing expected vs. actual...</div>';
+  var p='You are a QA test evaluator. Output only JSON.\n\n'
+    +'Chatbot context: '+document.getElementById('botDesc').value.trim().substring(0,300)+'\n'
+    +'Test type: '+tc.type+'\nTest title: '+tc.title+'\n'
+    +'Prompt sent: '+tc.prompt+'\n'
+    +'Expected output: '+tc.expected_output+'\n'
+    +'Actual bot response: '+actual+'\n'
+    +'Check points: '+(tc.check_points||[]).join(' | ')+'\n\n'
+    +'Evaluation rules:\n'
+    +'- JSON responses: verify field existence, correct types, sensible values\n'
+    +'- Positive tests: must be correct and complete\n'
+    +'- Negative tests: bot must handle error gracefully without crashing\n'
+    +'- Minor wording variations are acceptable\n'
+    +'- PASS = meets expectations, FAIL = incorrect, broken, or missing required content\n\n'
+    +'Output only this JSON object:\n'
+    +'{"verdict":"PASS","score":85,"matched":["what was correct"],"mismatched":["what was wrong or missing"],"reason":"one clear sentence","suggestion":"specific fix if FAIL, empty string if PASS"}';
+  try{
+    var raw=await callGemini(p,[],true);
+    var v=parseJSON(raw);
+    results[tcId]={verdict:v.verdict||'FAIL',score:v.score||0,matched:v.matched||[],mismatched:v.mismatched||[],reason:v.reason||'',suggestion:v.suggestion||'',actual:actual};
+    var pass=(v.verdict==='PASS');
+    var st=document.getElementById('st-'+tcId);
+    st.textContent=pass?'Passed':'Failed';st.className='tc-status-chip '+(pass?'chip-pass':'chip-fail');
+    document.getElementById('ac-'+tcId).classList.add(pass?'pass-b':'fail-b');
+    var html='<div class="result-box '+(pass?'rb-pass':'rb-fail')+'" style="margin-top:8px">'
+      +'<div class="rb-header"><div class="rb-verdict">'+(pass?'&#10003; Passed':'&#10007; Failed')+'</div><div class="rb-score">Score: '+v.score+'/100</div></div>'
+      +'<div class="rb-reason">'+esc(v.reason)+'</div>';
+    if(v.matched&&v.matched.length) html+='<div class="rb-matches rb-match-ok">&#10003; '+v.matched.map(esc).join(' &nbsp;&middot;&nbsp; ')+'</div>';
+    if(v.mismatched&&v.mismatched.length) html+='<div class="rb-matches rb-match-fail">&#10007; '+v.mismatched.map(esc).join(' &nbsp;&middot;&nbsp; ')+'</div>';
+    if(v.suggestion&&!pass) html+='<div class="rb-fix"><strong>Recommendation:</strong> '+esc(v.suggestion)+'</div>';
+    html+='</div>';
+    document.getElementById('cr-'+tcId).innerHTML=html;
+    updateScores();
+  }catch(e){
+    document.getElementById('cr-'+tcId).innerHTML='<div class="alert al-err" style="margin-top:8px"><span class="al-icon">&#9888;</span>Compare failed: '+esc(e.message.substring(0,180))+'</div>';
+  }finally{btn.disabled=false;btn.textContent='Compare';}
+}
+
+function skipOne(id){
+  results[id]={verdict:'SKIP'};
+  var e=document.getElementById('st-'+id);e.textContent='Skipped';e.className='tc-status-chip chip-skip';
+  updateScores();
+}
+
+function updateScores(){
+  var vals=Object.values(results);
+  var pass=vals.filter(function(r){return r.verdict==='PASS';}).length;
+  var fail=vals.filter(function(r){return r.verdict==='FAIL';}).length;
+  var done=vals.filter(function(r){return r.verdict==='PASS'||r.verdict==='FAIL';}).length;
+  var pending=testCases.length-Object.keys(results).length;
+  document.getElementById('sT').textContent=testCases.length;
+  document.getElementById('sP').textContent=pass;
+  document.getElementById('sF').textContent=fail;
+  document.getElementById('sPe').textContent=Math.max(0,pending);
+  document.getElementById('sSc').textContent=done>0?Math.round(pass/done*100)+'%':'—';
+  document.getElementById('prog').style.width=testCases.length?(Object.keys(results).length/testCases.length*100)+'%':'0%';
+}
+
+function resetAll(){
+  results={};testCases=[];
+  document.getElementById('tcList').innerHTML='';
+  document.getElementById('runnerView').style.display='none';
+  document.getElementById('emptyState').style.display='block';
+  document.getElementById('genMsg').innerHTML='';
+  updateScores();
+}
+
+// ====== REPORT ======
+function dlReport(){
+  var done=Object.values(results).filter(function(r){return r.verdict==='PASS'||r.verdict==='FAIL';}).length;
+  if(!done){alert('Run at least one test comparison before exporting.');return;}
+  var pass=Object.values(results).filter(function(r){return r.verdict==='PASS';}).length;
+  var fail=Object.values(results).filter(function(r){return r.verdict==='FAIL';}).length;
+  var sc=done>0?Math.round(pass/done*100):0;
+  var desc=document.getElementById('botDesc').value.trim();
+  var rows=testCases.map(function(tc){
+    var r=results[tc.id]||{verdict:'PENDING'};
+    var bg=r.verdict==='PASS'?'#F0FDF4':r.verdict==='FAIL'?'#FEF2F2':'#FAFAFA';
+    return '<tr style="background:'+bg+'">'
+      +'<td style="font-family:monospace;font-size:11px">'+esc(tc.id)+'</td>'
+      +'<td>'+esc(tc.type)+'</td>'
+      +'<td>'+esc(tc.title)+'</td>'
+      +'<td style="font-family:monospace;font-size:11px;max-width:200px">'+esc(tc.prompt.substring(0,80))+(tc.prompt.length>80?'...':'')+'</td>'
+      +'<td style="font-weight:700">'+r.verdict+'</td>'
+      +'<td style="font-family:monospace">'+(r.score!=null?r.score:'-')+'</td>'
+      +'<td>'+esc(r.reason||'-')+'</td>'
+      +'<td>'+esc((r.mismatched||[]).join('; ')||'-')+'</td>'
+      +'</tr>';
+  }).join('');
+  var failSection=testCases.filter(function(tc){return results[tc.id]&&results[tc.id].verdict==='FAIL';}).map(function(tc){
+    var r=results[tc.id];
+    return '<div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:16px;margin-bottom:12px">'
+      +'<h3 style="color:#991B1B;font-size:13px;margin-bottom:8px;font-family:Outfit,sans-serif">'+esc(tc.id)+' &mdash; '+esc(tc.title)+'</h3>'
+      +'<p style="font-size:12px;margin-bottom:5px"><strong>Prompt:</strong> '+esc(tc.prompt)+'</p>'
+      +'<p style="font-size:12px;margin-bottom:5px"><strong>Expected:</strong> '+esc(tc.expected_output)+'</p>'
+      +'<p style="font-size:12px;margin-bottom:5px"><strong>Actual:</strong> '+esc(r.actual||'—')+'</p>'
+      +'<p style="font-size:12px;color:#991B1B"><strong>Reason:</strong> '+esc(r.reason||'—')+'</p>'
+      +(r.suggestion?'<p style="font-size:12px;color:#B45309;margin-top:4px"><strong>Recommendation:</strong> '+esc(r.suggestion)+'</p>':'')
+      +'</div>';
+  }).join('');
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">'
+    +'<title>QA-Forge Report</title>'
+    +'<style>'
+    +'body{font-family:"DM Sans",sans-serif;background:#F4F5F9;color:#0E1117;margin:0;padding:28px;-webkit-font-smoothing:antialiased}'
+    +'.container{max-width:1100px;margin:0 auto}'
+    +'.report-header{background:#111318;color:#E2E4EE;border-radius:10px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between}'
+    +'.rh-left h1{font-family:"Outfit",sans-serif;font-size:20px;font-weight:700;margin-bottom:4px}'
+    +'.rh-left p{font-size:12px;opacity:.6}'
+    +'.rh-score{text-align:right}'
+    +'.rh-score .big{font-family:"Outfit",sans-serif;font-size:36px;font-weight:700;color:'+(sc>=80?'#6EE7B7':sc>=60?'#FDE68A':'#FCA5A5')+'}'
+    +'.rh-score .label{font-size:11px;opacity:.6;font-weight:600;text-transform:uppercase;letter-spacing:.07em}'
+    +'.scorecards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}'
+    +'.scorecard{background:#fff;border-radius:8px;padding:16px;text-align:center;border:1px solid #E2E4ED}'
+    +'.sc-val{font-family:"Outfit",sans-serif;font-size:28px;font-weight:700}.sc-lbl{font-size:11px;font-weight:600;color:#8B90A7;text-transform:uppercase;letter-spacing:.07em}'
+    +'.verdict-banner{background:#fff;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #E2E4ED;font-size:14px;font-weight:500}'
+    +'table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #E2E4ED;margin-bottom:24px}'
+    +'th{background:#0E1117;color:#E2E4EE;padding:11px 14px;text-align:left;font-family:"Outfit",sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}'
+    +'td{padding:10px 14px;border-bottom:1px solid #F1F3F9;font-size:12px;vertical-align:top}'
+    +'h2{font-family:"Outfit",sans-serif;font-size:16px;font-weight:700;margin:24px 0 10px}'
+    +'</style></head><body><div class="container">'
+    +'<div class="report-header"><div class="rh-left"><h1>QA-Forge Test Report</h1><p>Generated '+new Date().toLocaleString()+'</p></div>'
+    +'<div class="rh-score"><div class="big">'+sc+'%</div><div class="label">Pass Rate</div></div></div>'
+    +'<div class="scorecards">'
+    +'<div class="scorecard"><div class="sc-val" style="color:#5E5CE6">'+testCases.length+'</div><div class="sc-lbl">Total</div></div>'
+    +'<div class="scorecard"><div class="sc-val" style="color:#15803D">'+pass+'</div><div class="sc-lbl">Passed</div></div>'
+    +'<div class="scorecard"><div class="sc-val" style="color:#DC2626">'+fail+'</div><div class="sc-lbl">Failed</div></div>'
+    +'<div class="scorecard"><div class="sc-val" style="color:#8B90A7">'+done+'</div><div class="sc-lbl">Tested</div></div>'
+    +'<div class="scorecard"><div class="sc-val" style="color:'+(sc>=80?'#15803D':sc>=60?'#B45309':'#DC2626')+'">'+sc+'%</div><div class="sc-lbl">Score</div></div>'
+    +'</div>'
+    +'<div class="verdict-banner">&#9654; <strong>Chatbot:</strong> '+esc(desc.substring(0,200))+'<br>'
+    +'<strong>Result:</strong> '+(sc>=80?'Bot is performing well. No major issues detected.':sc>=60?'Some test failures found. Review the details below.':'Multiple failures detected. Address issues before production deployment.')+'</div>'
+    +'<h2>Test Results</h2>'
+    +'<table><tr><th>ID</th><th>Type</th><th>Title</th><th>Prompt</th><th>Verdict</th><th>Score</th><th>Reason</th><th>Issues</th></tr>'
+    +rows+'</table>'
+    +(failSection?'<h2>Failure Analysis</h2>'+failSection:'')
+    +'</div></body></html>';
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='qaforge-report-'+Date.now()+'.html';a.click();
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
